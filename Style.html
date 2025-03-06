@@ -1,0 +1,197 @@
+/* Style.html */
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #f5f5f5;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Default to left align for body content */
+}
+
+h3 {
+    color: #4CAF50;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    width: 100%; /* Ensure form groups take full width */
+    box-sizing: border-box; /* Include padding and border in element's total width and height */
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="text"],
+textarea,
+select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 10px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#status, #error {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #333;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+#error {
+    color: red;
+}
+
+#loading {
+    display: none;
+    margin-top: 10px;
+    color: #4CAF50;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 220px;
+    background-color: #f9f9f9;
+    color: #000;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px;
+    border: 1px solid #ddd;
+    position: absolute;
+    z-index: 1;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -110px;
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+
+/* UI_Main Specific Styles - consider if these should be in Style.html or kept separate */
+.container {
+    max-width: 800px;
+    width: 100%;
+    display: flex; /* Enable flexbox on container */
+    flex-direction: column; /* Stack children vertically */
+    align-items: stretch; /* Stretch items to fill container width */
+}
+
+.logo-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    width: 100%; /* Ensure logo container takes full width */
+}
+
+.logo {
+    max-height: 128px;
+    height: auto;
+}
+
+#response {
+    margin-top: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    white-space: pre-wrap;
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+    box-sizing: border-box; /* Ensure padding and border are included in width */
+}
+
+.buttons {
+    display: flex;
+    justify-content: flex-start; /* Align buttons to the start of the container */
+    gap: 10px; /* Spacing between buttons */
+    margin-top: 10px; /* Space above buttons */
+    width: 100%; /* Buttons container takes full width */
+    box-sizing: border-box; /* Ensure padding and border are included in width */
+}
+
+
+.send-button {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.send-button:hover {
+    background-color: #45a049;
+}
+
+.clear-button {
+    background-color: #f44336;
+    color: white;
+}
+
+.clear-button:hover {
+    background-color: #e31b0c;
+}
+
+
+.common-requests {
+    margin-top: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.json-key {
+    color: #d14;
+}
+
+.json-value {
+    color: #1a1aa6;
+}
+
+.json-string {
+    color: #d14;
+}
+
+.json-number {
+    color: #1a1aa6;
+}
+
+.json-boolean {
+    color: #1a1aa6;
+}
+
+.json-null {
+    color: #1a1aa6;
+}

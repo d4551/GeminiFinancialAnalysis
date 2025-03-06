@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <link rel="stylesheet" href="Style">
+</head>
+<body>
+
+  <div>
+     <h3>QuickBooks Configuration</h3>
+
+        <div class="form-group">
+            <label for="clientId">Client ID:
+                <span class="tooltip">?
+                <span class="tooltiptext">Get your Client ID from the QuickBooks Developer Portal.<br>
+                    <a href="https://developer.intuit.com/app/developer/qbo/docs/get-started" target="_blank">Learn more</a>
+                </span>
+                </span>
+            </label>
+            <input type="text" id="clientId" placeholder="Enter Client ID">
+        </div>
+
+        <div class="form-group">
+             <label for="clientSecret">Client Secret:
+                <span class="tooltip">?
+                  <span class="tooltiptext">Get your Client Secret from the QuickBooks Developer Portal.<br>
+                      <a href="https://developer.intuit.com/app/developer/qbo/docs/get-started" target="_blank">Learn more</a>
+                  </span>
+                </span>
+              </label>
+            <input type="text" id="clientSecret" placeholder="Enter Client Secret">
+        </div>
+      <div class="form-group">
+            <label for="environment">Environment:</label>
+             <select id="environment">
+                <option value="SANDBOX">Sandbox</option>
+                <option value="PRODUCTION">Production</option>
+            </select>
+        </div>
+
+       <button onclick="saveConfig()">Save Configuration</button>
+
+ </div>
+  <div>
+      <h3>Import Data from QuickBooks</h3>
+        <div class="form-group">
+           <label for="companyId">Company ID:
+              <span class="tooltip">?
+                <span class="tooltiptext">Find your Company ID in your QuickBooks account settings.<br>
+                  <a href="https://quickbooks.intuit.com/learn-support/en-us/help-article/customer-company-settings/find-quickbooks-online-company-id/L7lp8O9yU_US_en_US?uid=lwtgscgw" target="_blank">Learn more</a>
+                </span>
+              </span>
+            </label>
+          <input type="text" id="companyId" placeholder="Enter Company ID">
+        </div>
+
+         <div class="form-group">
+           <label for="query">Query:
+              <span class="tooltip">?
+                <span class="tooltiptext">Enter the query to fetch data from QuickBooks (SQL-like).\nExample: SELECT * FROM Customer.<br>
+                    <a href="https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities" target="_blank">Learn more</a>
+                </span>
+              </span>
+           </label>
+          <textarea id="query" rows="4" placeholder="Enter Query"></textarea>
+        </div>
+
+        <button onclick="importData()">Import Data</button>
+        <button onclick="resetAuth()">Reset Authorization</button>
+        <div id="loading">Loading...</div>
+<div id="status"></div>
+  </div>
+
+  <script>
+     async function saveConfig() {
+         const clientId = document.getElementById('clientId').value.trim();
+         const clientSecret = document.getElementById('clientSecret').value.trim();
+         const environment = document.getElementById('environment').value;
+
+
+         if (!clientId || !clientSecret) {
+              displayStatus('Please enter both Client ID and Client Secret.', true);
+                return;
+          }
+
+          try {
+                showLoading(true);
+                const result = await google.script.run
+                      .withSuccessHandler((response) => {
+                          displayStatus(response);
+                      })
+                      .withFailureHandler((error) => {
+                          displayStatus('Error: ' + error.message, true);
+                      })
+                      .setQuickBooksConfig(clientId, clientSecret, environment);
+              } catch (error){
+                displayStatus('Error: ' + error.message, true);
+             } finally {
+               showLoading(false);
+             }
+     }
+
+
+     async function importData() {
+          const companyId = document.getElementById('companyId').value.trim();
+          const query = document.getElementById('query').value.trim();
+
+          if (!companyId || !query) {
+                displayStatus('Please enter both Company ID and Query.', true);
+                return;
+            }
+
+            try {
+              showLoading(true);
+                const result = await google.script.run
+                    .withSuccessHandler((response) => {
+                        displayStatus(response);
+                    })
+                     .withFailureHandler((error) => {
+                       displayStatus('Error: ' + error.message, true);
+                    })
+                    .importDataFromQuickBooks(companyId, query);
+
+           } catch (error) {
+                displayStatus('Error: ' + error.message, true);
+            } finally {
+             showLoading(false);
+            }
+
+    }
+
+       async function resetAuth() {
+          try{
+
+             showLoading(true);
+                const result = await google.script.run.withSuccessHandler((response) => {
+                    displayStatus(response);
+                }).withFailureHandler((error) => {
+                    displayStatus(error.message, true);
+                }).resetQuickBooksAuth();
+
+          } catch (error){
+                displayStatus('Error: ' + error.message, true);
+
+          } finally {
+            showLoading(false)
+          }
+
+    }
+
+
+
+        function displayStatus(message, isError = false) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.style.color = isError ? 'red' : '#333';
+            statusDiv.textContent = message;
+        }
+
+
+       function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            google.script.run.withSuccessHandler(
+            function(url) {
+              document.getElementById('redirectUri').value = url;
+            }
+            ).logRedirectUri();
+        });
+
+  </script>
+</body>
+</html>

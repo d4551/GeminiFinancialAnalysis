@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <link rel="stylesheet" href="Style">
+</head>
+<body>
+    <div>
+        <h3>Generate Report</h3>
+        <form id="reportForm">
+            <div class="form-group">
+                <label class="tooltip">
+                    <input type="checkbox" id="includeTitle" checked> Include Title
+                    <span class="tooltiptext">Include a title section at the top of the report.</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="reportTitle">Report Title:</label>
+                <input type="text" id="reportTitle" placeholder="Enter Report Title">
+            </div>
+
+            <div class="form-group">
+                <label class="tooltip">
+                    <input type="checkbox" id="includeIntroduction" checked> Include Introduction
+                    <span class="tooltiptext">Include an introduction section explaining the report.</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="tooltip">
+                    <input type="checkbox" id="includeSummary" checked> Include Summary
+                    <span class="tooltiptext">Include a summary section with key statistics.</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="tooltip">
+                    <input type="checkbox" id="includeChart" checked> Include Chart
+                    <span class="tooltiptext">Include a chart visualizing error frequency by type.</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="tooltip">
+                    <input type="checkbox" id="includeNumericAnalysis" checked> Include Numeric Analysis
+                    <span class="tooltiptext">Include numeric analysis in the summary</span>
+                </label>
+            </div>
+             <div class="form-group">
+                <label class="tooltip">
+                    <input type="checkbox" id="includeCategoryBreakdown" checked> Include Category Breakdown
+                    <span class="tooltiptext">Include category breakdown in the summary</span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label class="tooltip">
+                    <input type="checkbox" id="includeDetailedAnalysis" checked> Include Detailed Analysis
+                    <span class="tooltiptext">Include a detailed analysis section.  AI Powered if enabled below.</span>
+                </label>
+            </div>
+
+
+            <div class="form-group">
+                <label class="tooltip">
+                    <input type="checkbox" id="includeAIResults" checked> Enhance Detailed Analysis with AI
+                    <span class="tooltiptext">Enhance the detailed analysis section with AI-powered insights from Gemini.  Requires "Include Detailed Analysis" to be checked.</span>
+                </label>
+            </div>
+
+            <button type="button" onclick="generateReport()">Generate Report</button>
+            <div class="spinner" id="spinner"></div>
+        </form>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        async function generateReport() {
+            const form = document.getElementById('reportForm');
+            const options = {
+                includeTitle: form.includeTitle.checked,
+                reportTitle: document.getElementById('reportTitle').value,
+                includeIntroduction: form.includeIntroduction.checked,
+                includeSummary: form.includeSummary.checked,
+                includeChart: form.includeChart.checked,
+                includeNumericAnalysis: form.includeNumericAnalysis.checked,
+                includeCategoryBreakdown: form.includeCategoryBreakdown.checked,
+                includeDetailedAnalysis: form.includeDetailedAnalysis.checked,
+                includeAIResults: form.includeAIResults.checked,
+                locale: 'en-US'
+            };
+
+            document.getElementById('status').innerText = '';
+            const spinner = document.getElementById('spinner');
+            spinner.style.display = 'block';
+
+            try {
+                const result = await google.script.run
+                    .withSuccessHandler(response => {
+                        spinner.style.display = 'none';
+                        document.getElementById('status').innerText = 'Status: ' + response;
+                    })
+                    .withFailureHandler(error => {
+                        spinner.style.display = 'none';
+                        document.getElementById('status').innerText = 'Error: ' + error.message;
+                    })
+                    .generateReportWithOptions(options);
+
+            } catch (error) {
+                document.getElementById('status').innerText = 'Error: ' + error.message;
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

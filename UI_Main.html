@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <link rel="stylesheet" href="Style">
+</head>
+<body>
+    <div class="container">
+      <div class="logo-container">
+          <img src="https://ascentio.net/wp-content/uploads/2024/05/FE_Logo_app.png" alt="Logo" class="logo">
+        </div>
+        <h3>Fiscal Eye Chat</h3>
+
+        <label for="query">Enter your query:
+            <span class="tooltip">?
+                <span class="tooltiptext">
+                    You can ask for transaction analysis, anomaly detection, and more.<br>
+                    <a href="https://example.com/docs" target="_blank">Learn more</a>
+                </span>
+            </span>
+        </label>
+        <textarea id="query" rows="4" placeholder="Enter your query here..."></textarea><br>
+
+        <div class="buttons">
+            <button class="send-button" onclick="sendQuery()">Send</button>
+            <button class="clear-button" onclick="clearQuery()">Clear</button>
+        </div>
+
+         <div id="loading">Loading...</div>
+        <div id="response"></div>
+        <div id="error"></div>
+
+        <div class="common-requests">
+            <h3>Common Requests</h3>
+             <button onclick="monthlyComparison()">Monthly Comparison</button>
+        </div>
+
+    </div>
+
+    <script>
+       async function sendQuery() {
+            const query = document.getElementById('query').value.trim();
+            if (!query) {
+                displayError('Please enter a query.');
+                return;
+            }
+
+            clearError();
+            displayResponse(''); // Clear previous response
+            showLoading(true);  // Show loading indicator
+
+
+           try{
+                const response = await google.script.run
+                    .withSuccessHandler(displayResponse)
+                    .withFailureHandler(displayError)
+                    .handleUserQuery(query);
+
+           } catch(error){
+              displayError(error.message)
+           } finally {
+             showLoading(false);
+           }
+
+        }
+
+        function clearQuery() {
+            document.getElementById('query').value = '';
+            document.getElementById('response').innerHTML = '';
+            clearError();
+        }
+
+        function displayResponse(response) {
+           if (isJSONString(response)) {
+
+                const jsonResponse = JSON.parse(response);
+                document.getElementById('response').innerHTML = syntaxHighlight(jsonResponse);
+            }
+            else {
+                const formattedResponse = response.replace(/\*\*(.*?)\*\*/g, '<span class="bold">$1</span>');
+                 document.getElementById('response').innerHTML = formattedResponse;
+            }
+        }
+
+        function displayError(error) {
+            document.getElementById('error').textContent = `Error: ${error}`;
+        }
+
+        function clearError() {
+            document.getElementById('error').textContent = '';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+
+         function monthlyComparison() {
+            const query = 'monthly comparison';
+            document.getElementById('query').value = query;
+            sendQuery();
+        }
+
+         function isJSONString(str) {
+              try {
+                  JSON.parse(str);
+              } catch (e) {
+                  return false;
+              }
+              return true;
+          }
+
+           function syntaxHighlight(json) {
+                if (typeof json != 'string') {
+                    json = JSON.stringify(json, undefined, 2);
+                }
+                json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+                return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
+                    let cls = 'json-number';
+                    if (/^"/.test(match)) {
+                        if (/:$/.test(match)) {
+                            cls = 'json-key';
+                        } else {
+                            cls = 'json-string';
+                        }
+                    } else if (/true|false/.test(match)) {
+                        cls = 'json-boolean';
+                    } else if (/null/.test(match)) {
+                        cls = 'json-null';
+                    }
+                    return '<span class="' + cls + '">' + match + '</span>';
+                });
+            }
+    </script>
+</body>
+</html>
