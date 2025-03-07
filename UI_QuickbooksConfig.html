@@ -2,11 +2,12 @@
 <html>
 <head>
   <base target="_top">
-  <link rel="stylesheet" href="Style">
+  <style>
+    <?!= include('Style'); ?>
+  </style>
 </head>
 <body>
-
-  <div>
+  <div class="container">
      <h3>QuickBooks Configuration</h3>
 
         <div class="form-group">
@@ -39,36 +40,42 @@
         </div>
 
        <button onclick="saveConfig()">Save Configuration</button>
-
- </div>
-  <div>
-      <h3>Import Data from QuickBooks</h3>
-        <div class="form-group">
-           <label for="companyId">Company ID:
-              <span class="tooltip">?
-                <span class="tooltiptext">Find your Company ID in your QuickBooks account settings.<br>
-                  <a href="https://quickbooks.intuit.com/learn-support/en-us/help-article/customer-company-settings/find-quickbooks-online-company-id/L7lp8O9yU_US_en_US?uid=lwtgscgw" target="_blank">Learn more</a>
+  
+      <div class="card">
+          <h4>Import Data from QuickBooks</h4>
+          <div class="form-group">
+             <label for="companyId">Company ID:
+                <span class="tooltip">?
+                  <span class="tooltiptext">Find your Company ID in your QuickBooks account settings.<br>
+                    <a href="https://quickbooks.intuit.com/learn-support/en-us/help-article/customer-company-settings/find-quickbooks-online-company-id/L7lp8O9yU_US_en_US?uid=lwtgscgw" target="_blank">Learn more</a>
+                  </span>
                 </span>
-              </span>
-            </label>
-          <input type="text" id="companyId" placeholder="Enter Company ID">
-        </div>
+              </label>
+            <input type="text" id="companyId" placeholder="Enter Company ID">
+          </div>
 
-         <div class="form-group">
-           <label for="query">Query:
-              <span class="tooltip">?
-                <span class="tooltiptext">Enter the query to fetch data from QuickBooks (SQL-like).\nExample: SELECT * FROM Customer.<br>
-                    <a href="https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities" target="_blank">Learn more</a>
+           <div class="form-group">
+             <label for="query">Query:
+                <span class="tooltip">?
+                  <span class="tooltiptext">Enter the query to fetch data from QuickBooks (SQL-like).<br>Example: SELECT * FROM Customer.<br>
+                      <a href="https://developer.intuit.com/app/developer/qbo/docs/api/accounting/all-entities" target="_blank">Learn more</a>
+                  </span>
                 </span>
-              </span>
-           </label>
-          <textarea id="query" rows="4" placeholder="Enter Query"></textarea>
-        </div>
+             </label>
+            <textarea id="query" rows="4" placeholder="Enter Query"></textarea>
+          </div>
 
-        <button onclick="importData()">Import Data</button>
-        <button onclick="resetAuth()">Reset Authorization</button>
-        <div id="loading">Loading...</div>
-<div id="status"></div>
+          <div class="buttons">
+            <button onclick="importData()">Import Data</button>
+            <button onclick="resetAuth()" class="secondary">Reset Authorization</button>
+          </div>
+      </div>
+
+      <div id="loading" class="loading" style="display: none;">
+          <div class="spinner"></div>
+          Processing...
+      </div>
+      <div id="status" class="status"></div>
   </div>
 
   <script>
@@ -76,7 +83,6 @@
          const clientId = document.getElementById('clientId').value.trim();
          const clientSecret = document.getElementById('clientSecret').value.trim();
          const environment = document.getElementById('environment').value;
-
 
          if (!clientId || !clientSecret) {
               displayStatus('Please enter both Client ID and Client Secret.', true);
@@ -99,7 +105,6 @@
                showLoading(false);
              }
      }
-
 
      async function importData() {
           const companyId = document.getElementById('companyId').value.trim();
@@ -126,12 +131,10 @@
             } finally {
              showLoading(false);
             }
-
     }
 
        async function resetAuth() {
           try{
-
              showLoading(true);
                 const result = await google.script.run.withSuccessHandler((response) => {
                     displayStatus(response);
@@ -145,30 +148,17 @@
           } finally {
             showLoading(false)
           }
-
     }
-
-
 
         function displayStatus(message, isError = false) {
             const statusDiv = document.getElementById('status');
-            statusDiv.style.color = isError ? 'red' : '#333';
+            statusDiv.className = isError ? 'error' : 'success';
             statusDiv.textContent = message;
         }
-
 
        function showLoading(show) {
             document.getElementById('loading').style.display = show ? 'block' : 'none';
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            google.script.run.withSuccessHandler(
-            function(url) {
-              document.getElementById('redirectUri').value = url;
-            }
-            ).logRedirectUri();
-        });
-
   </script>
 </body>
 </html>

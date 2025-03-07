@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+    <?!= include('Style'); ?>
+    </style
+    <title>Email Financial Report</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Email Financial Report</h2>
+        
+        <div class="card">
+            <h3>Recipient</h3>
+            <div class="form-group">
+                <label for="recipient">Email Address:</label>
+                <input type="email" id="recipient" required value="<?= userEmail || '' ?>">
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Report Options</h3>
+            <div class="form-group">
+                <label for="reportType">Report Type:</label>
+                <select id="reportType">
+                    <option value="standard">Standard Report</option>
+                    <option value="executive">Executive Summary</option>
+                    <option value="anomaly">Anomaly Detection Report</option>
+                    <option value="monthly">Monthly Analysis</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="includeCharts" checked>
+                    Include Charts and Visualizations
+                </label>
+            </div>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="includeAI" checked>
+                    Include AI Analysis
+                </label>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Message</h3>
+            <div class="form-group">
+                <label for="subject">Subject (Optional):</label>
+                <input type="text" id="subject" placeholder="Financial Analysis Report">
+            </div>
+            
+            <div class="form-group">
+                <label for="customMessage">Custom Message:</label>
+                <textarea id="customMessage" rows="3" placeholder="Please find attached the financial analysis report..."></textarea>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button onclick="sendReport()" class="primary">Send Report</button>
+            <button onclick="google.script.host.close()">Cancel</button>
+        </div>
+        
+        <div id="loading" class="loading" style="display:none;">
+            <div class="spinner"></div>
+            Generating and sending report...
+        </div>
+        
+        <div id="status" class="status" style="display:none;"></div>
+    </div>
+    
+    <script>
+        function sendReport() {
+            // Validate email
+            const recipient = document.getElementById('recipient').value.trim();
+            if (!recipient || !validateEmail(recipient)) {
+                showStatus('Please enter a valid email address', true);
+                return;
+            }
+            
+            // Get report options
+            const reportType = document.getElementById('reportType').value;
+            const includeCharts = document.getElementById('includeCharts').checked;
+            const includeAI = document.getElementById('includeAI').checked;
+            const subject = document.getElementById('subject').value.trim();
+            const customMessage = document.getElementById('customMessage').value;
+            
+            // Show loading indicator
+            document.getElementById('loading').style.display = 'block';
+            clearStatus();
+            
+            // Call server-side function
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    document.getElementById('loading').style.display = 'none';
+                    showStatus(result, false);
+                    
+                    // Enable close button after successful send
+                    const statusDiv = document.getElementById('status');
+                    statusDiv.innerHTML += '<div style="margin-top: 15px;"><button onclick="google.script.host.close()">Close</button></div>';
+                })
+                .withFailureHandler(function(error) {
+                    document.getElementById('loading').style.display = 'none';
+                    showStatus('Error: ' + error.message, true);
+                })
+                .emailFinancialReport(recipient, reportType, customMessage, {
+                    includeCharts: includeCharts,
+                    includeAI: includeAI,
+                    subject: subject || undefined
+                });
+        }
+        
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+        
+        function showStatus(message, isError) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = isError ? 'status error' : 'status success';
+            statusDiv.textContent = message;
+        }
+        
+        function clearStatus() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.style.display = 'none';
+            statusDiv.textContent = '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+        <?!= include('Style'); ?>
+    </style>
+    <title>Gemini Model Selection</title>
+</head>
+<body>
+    <div class="container">
+        <h3>Gemini Model Selection</h3>
+        <p>Select which Gemini models to use for different tasks.</p>
+        
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            Loading available models...
+        </div>
+        
+        <div class="card">
+            <div class="model-selection-container">
+                <h4>Text Model <span class="model-help">?<span class="model-tooltip">This model is used for text generation, analysis, and chat functionality.</span></span></h4>
+                <p>Select the Gemini model to use for text generation and function calling.</p>
+                <div id="textModelOptions" class="model-options-group">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="model-selection-container">
+                <h4>Vision Model <span class="model-help">?<span class="model-tooltip">This model is used for image analysis and chart interpretation.</span></span></h4>
+                <p>Select the Gemini model to use for image analysis.</p>
+                <div id="visionModelOptions" class="model-options-group">
+                    <!-- Will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button onclick="refreshModels()" class="model-refresh">Refresh Available Models</button>
+            <button onclick="saveModelSelections()" class="model-save">Save Selections</button>
+        </div>
+        
+        <div id="status" class="status"></div>
+    </div>
+    
+    <script>
+        // On page load, fetch available models
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshModels();
+        });
+        
+        function refreshModels() {
+            showLoading(true);
+            clearStatus();
+            
+            google.script.run
+                .withSuccessHandler(function(modelInfo) {
+                    populateModelOptions(modelInfo);
+                    showLoading(false);
+                })
+                .withFailureHandler(function(error) {
+                    showStatus('Error: ' + error.message, true);
+                    showLoading(false);
+                })
+                .getGeminiModelInfo();
+        }
+        
+        function populateModelOptions(modelInfo) {
+            const textModelContainer = document.getElementById('textModelOptions');
+            const visionModelContainer = document.getElementById('visionModelOptions');
+            
+            // Clear existing options
+            textModelContainer.innerHTML = '';
+            visionModelContainer.innerHTML = '';
+            
+            const textModels = modelInfo.availableModels.filter(m => !m.name.includes('vision'));
+            const visionModels = modelInfo.availableModels.filter(m => m.name.includes('vision'));
+            
+            // Add default models if no models were found
+            if (textModels.length === 0) {
+                addModelOption(textModelContainer, 'gemini-1.5-pro-latest', 'Gemini 1.5 Pro', 
+                    modelInfo.currentTextModel === 'gemini-1.5-pro-latest', '1.5', true, true);
+                addModelOption(textModelContainer, 'gemini-1.0-pro-latest', 'Gemini 1.0 Pro', 
+                    modelInfo.currentTextModel === 'gemini-1.0-pro-latest', '1.0', true, true);
+            } else {
+                // Add available text models
+                textModels.forEach(model => {
+                    const modelName = model.name.split('/').pop();
+                    const displayInfo = getModelDisplayInfo(modelName);
+                    const isSelected = modelName === modelInfo.currentTextModel;
+                    addModelOption(
+                        textModelContainer, 
+                        modelName, 
+                        displayInfo.displayName, 
+                        isSelected,
+                        displayInfo.version,
+                        displayInfo.isPro,
+                        displayInfo.isLatest
+                    );
+                });
+            }
+            
+            // Add default vision models if no models were found
+            if (visionModels.length === 0) {
+                addModelOption(visionModelContainer, 'gemini-1.5-pro-vision-latest', 'Gemini 1.5 Pro Vision', 
+                    modelInfo.currentVisionModel === 'gemini-1.5-pro-vision-latest', '1.5', true, true);
+                addModelOption(visionModelContainer, 'gemini-1.0-pro-vision-latest', 'Gemini 1.0 Pro Vision', 
+                    modelInfo.currentVisionModel === 'gemini-1.0-pro-vision-latest', '1.0', true, true);
+            } else {
+                // Add available vision models
+                visionModels.forEach(model => {
+                    const modelName = model.name.split('/').pop();
+                    const displayInfo = getModelDisplayInfo(modelName);
+                    const isSelected = modelName === modelInfo.currentVisionModel;
+                    addModelOption(
+                        visionModelContainer,
+                        modelName,
+                        displayInfo.displayName,
+                        isSelected,
+                        displayInfo.version,
+                        displayInfo.isPro,
+                        displayInfo.isLatest
+                    );
+                });
+            }
+            
+            if (modelInfo.availableModels.length === 0) {
+                showStatus('No models found from API. Using default models.', false);
+            } else {
+                showStatus(`Found ${textModels.length} text models and ${visionModels.length} vision models.`, false);
+            }
+        }
+        
+        function addModelOption(container, modelName, displayName, isSelected, version, isPro, isLatest) {
+            const option = document.createElement('div');
+            option.className = 'model-option-item' + (isSelected ? ' selected' : '');
+            
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = container.id === 'textModelOptions' ? 'textModel' : 'visionModel';
+            radio.value = modelName;
+            radio.id = modelName;
+            radio.checked = isSelected;
+            
+            const label = document.createElement('label');
+            label.htmlFor = modelName;
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'model-name'; // Add class for better styling
+            nameSpan.textContent = displayName;
+            
+            // Add version badge
+            if (version) {
+                const versionBadge = document.createElement('span');
+                versionBadge.className = 'model-badge';
+                versionBadge.textContent = `v${version}`;
+                if (isPro) versionBadge.classList.add('pro');
+                nameSpan.appendChild(versionBadge);
+            }
+            
+            // Add latest badge
+            if (isLatest) {
+                const latestBadge = document.createElement('span');
+                latestBadge.className = 'model-badge latest';
+                latestBadge.textContent = 'Latest';
+                nameSpan.appendChild(latestBadge);
+            }
+            
+            label.appendChild(nameSpan);
+            
+            // Add description
+            const description = document.createElement('span');
+            description.className = 'model-description';
+            description.textContent = getModelDescription(modelName);
+            label.appendChild(description);
+            
+            option.appendChild(radio);
+            option.appendChild(label);
+            container.appendChild(option);
+            
+            // Add click handler to highlight selected item
+            option.addEventListener('click', function() {
+                // Unselect all options
+                const options = container.querySelectorAll('.model-option-item');
+                options.forEach(opt => opt.classList.remove('selected'));
+                
+                // Select this option
+                radio.checked = true;
+                option.classList.add('selected');
+            });
+        }
+        
+        function getModelDisplayInfo(modelName) {
+            // Extract version (1.0, 1.5, etc)
+            const versionMatch = modelName.match(/\d+\.\d+/);
+            const version = versionMatch ? versionMatch[0] : '';
+            
+            // Check if it's a Pro model
+            const isPro = modelName.includes('pro');
+            
+            // Check if it's the latest version
+            const isLatest = modelName.includes('latest');
+            
+            // Create a more user-friendly display name
+            let displayName = modelName
+                .replace(/-latest$/, '')
+                .replace(/gemini-/, 'Gemini ');
+                
+            // Format the display name
+            displayName = displayName
+                .replace(/-/g, ' ')
+                .replace(/(^|\s)\S/g, function(t) { return t.toUpperCase() });
+                
+            return {
+                displayName,
+                version,
+                isPro,
+                isLatest
+            };
+        }
+        
+        function getModelDescription(modelName) {
+            if (modelName.includes('1.5-pro')) {
+                return "Recommended for most use cases - best overall performance";
+            } else if (modelName.includes('1.0-pro')) {
+                return "Stable performance, good for consistent results";
+            } else if (modelName.includes('vision')) {
+                return "Specialized for image and chart analysis";
+            } else if (modelName.includes('flash')) {
+                return "Fast response times, lower quality";
+            } else {
+                return "Standard Gemini model";
+            }
+        }
+        
+        function saveModelSelections() {
+            const textModelRadios = document.getElementsByName('textModel');
+            const visionModelRadios = document.getElementsByName('visionModel');
+            
+            let selectedTextModel = '';
+            let selectedVisionModel = '';
+            
+            for (const radio of textModelRadios) {
+                if (radio.checked) {
+                    selectedTextModel = radio.value;
+                    break;
+                }
+            }
+            
+            for (const radio of visionModelRadios) {
+                if (radio.checked) {
+                    selectedVisionModel = radio.value;
+                    break;
+                }
+            }
+            
+            if (!selectedTextModel || !selectedVisionModel) {
+                showStatus('Please select both text and vision models.', true);
+                return;
+            }
+            
+            showLoading(true);
+            clearStatus();
+            
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    showStatus('Models saved successfully!', false);
+                    showLoading(false);
+                })
+                .withFailureHandler(function(error) {
+                    showStatus('Error saving models: ' + error.message, true);
+                    showLoading(false);
+                })
+                .saveGeminiModelSelections(selectedTextModel, selectedVisionModel);
+        }
+        
+        function showStatus(message, isError) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = isError ? 'status error' : 'status success';
+            
+            // Make sure the status is visible
+            statusElement.style.display = 'block';
+        }
+        
+        function clearStatus() {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = '';
+            statusElement.className = 'status';
+            statusElement.style.display = 'none';
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

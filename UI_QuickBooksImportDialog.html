@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+<style>
+  <?!= include('Style'); ?>
+</style>
+</head>
+<body>
+  <div class="container">
+    <h2>QuickBooks Import</h2>
+    <p>Import transaction data from QuickBooks by uploading a CSV export file.</p>
+    
+    <div class="card">
+      <h3>CSV Upload</h3>
+      <p>Select the QuickBooks CSV file to upload:</p>
+      <input type="file" id="qbFile" accept=".csv" class="file-input" />
+      <p class="info-text">Supported format: CSV export from QuickBooks with transaction data</p>
+    </div>
+    
+    <div class="buttons">
+      <button onclick="document.getElementById('qbFile').click()" class="primary">Select File</button>
+      <button onclick="google.script.host.close()" class="secondary">Cancel</button>
+    </div>
+    
+    <div id="loading" class="loading" style="display:none;">
+      <div class="spinner"></div>
+      Processing data...
+    </div>
+    
+    <div id="status" class="status info" style="display:none;"></div>
+  </div>
+  
+  <script>
+    // Listen for file selection and read CSV
+    document.getElementById('qbFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      // Show loading indicator
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('status').style.display = 'none';
+      
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const content = evt.target.result;
+        
+        // Call the server-side function to process the CSV
+        google.script.run
+          .withSuccessHandler(function(msg) {
+            // Hide loading and show success message
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('status').style.display = 'block';
+            document.getElementById('status').className = 'status success';
+            document.getElementById('status').textContent = msg;
+          })
+          .withFailureHandler(function(err) {
+            // Hide loading and show error message
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('status').style.display = 'block';
+            document.getElementById('status').className = 'status error';
+            document.getElementById('status').textContent = "Import failed: " + err.message;
+          })
+          .processQuickBooksImport(content);
+      };
+      
+      // Start reading the file
+      reader.readAsText(file);
+    });
+  </script>
+</body>
+</html>

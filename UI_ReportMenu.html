@@ -2,115 +2,551 @@
 <html>
 <head>
     <base target="_top">
-    <link rel="stylesheet" href="Style">
+    <?!= include('Style'); ?>
+    <style>
+        .report-option-group {
+            margin-bottom: 20px;
+            border-left: 4px solid #1a73e8;
+            padding-left: 12px;
+        }
+        
+        .report-preview {
+            background-color: #f8f9fa;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        
+        .template-chip {
+            display: inline-block;
+            padding: 6px 12px;
+            margin: 4px;
+            background-color: #e8f0fe;
+            color: #1a73e8;
+            border-radius: 16px;
+            border: 1px solid #1a73e8;
+            cursor: pointer;
+        }
+        
+        .template-chip.selected {
+            background-color: #1a73e8;
+            color: white;
+        }
+        
+        .report-type-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .report-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .report-card:hover {
+            border-color: #4285F4;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .report-card.selected {
+            border-color: #4285F4;
+            background-color: #E3F2FD;
+        }
+        
+        .report-card.selected::after {
+            content: "✓";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #4285F4;
+            font-weight: bold;
+        }
+        
+        .report-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .report-description {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .options-container {
+            margin-top: 20px;
+        }
+        
+        .option-section {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #4285F4;
+        }
+        
+        .option-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .date-range-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .preview-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f0f7ff;
+            border-radius: 8px;
+            font-size: 13px;
+        }
+        
+        .preview-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #4285F4;
+        }
+        
+        .preview-content {
+            color: #555;
+            line-height: 1.5;
+        }
+        
+        .spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .success, .error {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .result-link {
+            margin-top: 10px;
+        }
+        
+        .advanced-options-toggle {
+            color: #4285F4;
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: underline;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .advanced-options {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ddd;
+        }
+        
+        .actions-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+        
+        .secondary-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .schedule-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            color: #4285F4;
+            font-size: 13px;
+        }
+    </style>
 </head>
 <body>
-    <div>
-        <h3>Generate Report</h3>
-        <form id="reportForm">
-            <div class="form-group">
-                <label class="tooltip">
-                    <input type="checkbox" id="includeTitle" checked> Include Title
-                    <span class="tooltiptext">Include a title section at the top of the report.</span>
-                </label>
+    <div class="container">
+        <h2>Generate Financial Report</h2>
+        <p class="description">Select a report type and configure options to generate a detailed financial analysis report.</p>
+        
+        <div class="report-type-grid">
+            <div class="report-card" data-type="standard" onclick="selectReportType('standard')">
+                <div class="report-title">Standard Report</div>
+                <div class="report-description">Comprehensive analysis with anomaly detection and data validation.</div>
             </div>
-
-            <div class="form-group">
-                <label for="reportTitle">Report Title:</label>
-                <input type="text" id="reportTitle" placeholder="Enter Report Title">
+            
+            <div class="report-card" data-type="executive" onclick="selectReportType('executive')">
+                <div class="report-title">Executive Summary</div>
+                <div class="report-description">High-level overview with key metrics and insights for management.</div>
             </div>
-
-            <div class="form-group">
-                <label class="tooltip">
-                    <input type="checkbox" id="includeIntroduction" checked> Include Introduction
-                    <span class="tooltiptext">Include an introduction section explaining the report.</span>
-                </label>
+            
+            <div class="report-card" data-type="monthly" onclick="selectReportType('monthly')">
+                <div class="report-title">Monthly Analysis</div>
+                <div class="report-description">Month-over-month comparison with trend analysis.</div>
             </div>
-
-            <div class="form-group">
-                <label class="tooltip">
-                    <input type="checkbox" id="includeSummary" checked> Include Summary
-                    <span class="tooltiptext">Include a summary section with key statistics.</span>
-                </label>
+            
+            <div class="report-card" data-type="anomaly" onclick="selectReportType('anomaly')">
+                <div class="report-title">Anomaly Detail</div>
+                <div class="report-description">In-depth analysis of detected anomalies and data issues.</div>
             </div>
-
-            <div class="form-group">
-                <label class="tooltip">
-                    <input type="checkbox" id="includeChart" checked> Include Chart
-                    <span class="tooltiptext">Include a chart visualizing error frequency by type.</span>
-                </label>
+        </div>
+        
+        <div class="preview-section">
+            <div class="preview-title">Report Preview</div>
+            <div id="reportPreview" class="preview-content">
+                This standard report will include comprehensive analysis of your financial data,
+                highlighting anomalies, validating data quality, and providing insights into overall financial health.
             </div>
-
-            <div class="form-group">
-                <label class="tooltip">
-                    <input type="checkbox" id="includeNumericAnalysis" checked> Include Numeric Analysis
-                    <span class="tooltiptext">Include numeric analysis in the summary</span>
-                </label>
+        </div>
+        
+        <div class="options-container">
+            <div class="option-section">
+                <div class="option-title">Report Options</div>
+                <div class="checkbox-group">
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="includeCharts" checked>
+                        <label for="includeCharts">Include Charts</label>
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="includeAI" checked>
+                        <label for="includeAI">Include AI Analysis</label>
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="includeTOC">
+                        <label for="includeTOC">Include Table of Contents</label>
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="includeRecommendations" checked>
+                        <label for="includeRecommendations">Include Recommendations</label>
+                    </div>
+                </div>
             </div>
-             <div class="form-group">
-                <label class="tooltip">
-                    <input type="checkbox" id="includeCategoryBreakdown" checked> Include Category Breakdown
-                    <span class="tooltiptext">Include category breakdown in the summary</span>
-                </label>
+            
+            <div id="dateRangeSection" class="option-section" style="display: none;">
+                <div class="option-title">Date Range</div>
+                <div class="date-range-container">
+                    <div class="form-group">
+                        <label for="startDate">Start Date:</label>
+                        <input type="date" id="startDate" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End Date:</label>
+                        <input type="date" id="endDate" class="form-control">
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label class="tooltip">
-                    <input type="checkbox" id="includeDetailedAnalysis" checked> Include Detailed Analysis
-                    <span class="tooltiptext">Include a detailed analysis section.  AI Powered if enabled below.</span>
-                </label>
+            
+            <div class="option-section">
+                <div class="option-title">Format Options</div>
+                <div class="form-group">
+                    <label for="locale">Locale:</label>
+                    <select id="locale" class="form-control">
+                        <option value="en-US">English (US)</option>
+                        <option value="en-GB">English (UK)</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="es-ES">Spanish</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="currency">Currency:</label>
+                    <select id="currency" class="form-control">
+                        <option value="USD">US Dollar ($)</option>
+                        <option value="EUR">Euro (€)</option>
+                        <option value="GBP">British Pound (£)</option>
+                        <option value="CAD">Canadian Dollar (C$)</option>
+                        <option value="JPY">Japanese Yen (¥)</option>
+                    </select>
+                </div>
+                
+                <span class="advanced-options-toggle" onclick="toggleAdvancedOptions()">Show Advanced Options</span>
+                
+                <div id="advancedOptions" class="advanced-options">
+                    <div class="form-group">
+                        <label for="confidenceThreshold">Anomaly Confidence Threshold:</label>
+                        <select id="confidenceThreshold" class="form-control">
+                            <option value="0.3">Low (30%)</option>
+                            <option value="0.5" selected>Medium (50%)</option>
+                            <option value="0.8">High (80%)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="checkbox-container">
+                        <input type="checkbox" id="exportPDF">
+                        <label for="exportPDF">Generate PDF Version</label>
+                    </div>
+                </div>
             </div>
-
-
-            <div class="form-group">
-                <label class="tooltip">
-                    <input type="checkbox" id="includeAIResults" checked> Enhance Detailed Analysis with AI
-                    <span class="tooltiptext">Enhance the detailed analysis section with AI-powered insights from Gemini.  Requires "Include Detailed Analysis" to be checked.</span>
-                </label>
+        </div>
+        
+        <div id="success" class="success"></div>
+        <div id="error" class="error"></div>
+        
+        <div class="actions-row">
+            <button id="generateButton" class="primary-button" onclick="generateReport()">
+                Generate Report
+            </button>
+            
+            <div class="secondary-actions">
+                <div class="schedule-option" onclick="showScheduleDialog()">
+                    <i class="material-icons" style="font-size: 18px; margin-right: 4px;">schedule</i>
+                    Schedule This Report
+                </div>
+                <button class="secondary-button" onclick="google.script.host.close()">Cancel</button>
             </div>
-
-            <button type="button" onclick="generateReport()">Generate Report</button>
-            <div class="spinner" id="spinner"></div>
-        </form>
-        <div id="status"></div>
+        </div>
     </div>
-
+    
     <script>
-        async function generateReport() {
-            const form = document.getElementById('reportForm');
-            const options = {
-                includeTitle: form.includeTitle.checked,
-                reportTitle: document.getElementById('reportTitle').value,
-                includeIntroduction: form.includeIntroduction.checked,
-                includeSummary: form.includeSummary.checked,
-                includeChart: form.includeChart.checked,
-                includeNumericAnalysis: form.includeNumericAnalysis.checked,
-                includeCategoryBreakdown: form.includeCategoryBreakdown.checked,
-                includeDetailedAnalysis: form.includeDetailedAnalysis.checked,
-                includeAIResults: form.includeAIResults.checked,
-                locale: 'en-US'
+        let selectedReportType = 'standard';
+        
+        // Preview content for each report type
+        const reportPreviews = {
+            'standard': 'This standard report will include comprehensive analysis of your financial data, highlighting anomalies, validating data quality, and providing insights into overall financial health.',
+            'executive': 'The executive summary provides a high-level overview of key financial metrics and insights designed for management review. It includes critical trends, risks, and opportunities requiring attention.',
+            'monthly': 'This monthly comparison report analyzes period-over-period changes, highlighting significant trends, variances, and patterns in your financial data across months.',
+            'anomaly': 'The anomaly detail report focuses specifically on unusual transactions and data inconsistencies, with in-depth analysis of each issue and recommended corrective actions.'
+        };
+        
+        // Set initial locale from server if available
+        document.addEventListener('DOMContentLoaded', function() {
+            const defaultLocale = '<?= defaultLocale ?>' || 'en-US';
+            document.getElementById('locale').value = defaultLocale;
+            
+            const defaultCurrency = '<?= defaultCurrency ?>' || 'USD';
+            document.getElementById('currency').value = defaultCurrency;
+            
+            // Select standard report by default
+            selectReportType('standard');
+            
+            // Set default dates if applicable
+            setDefaultDates();
+        });
+        
+        // Set default date range (current month)
+        function setDefaultDates() {
+            const now = new Date();
+            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+            const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            
+            const formatDate = (date) => {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
             };
-
-            document.getElementById('status').innerText = '';
-            const spinner = document.getElementById('spinner');
-            spinner.style.display = 'block';
-
-            try {
-                const result = await google.script.run
-                    .withSuccessHandler(response => {
-                        spinner.style.display = 'none';
-                        document.getElementById('status').innerText = 'Status: ' + response;
-                    })
-                    .withFailureHandler(error => {
-                        spinner.style.display = 'none';
-                        document.getElementById('status').innerText = 'Error: ' + error.message;
-                    })
-                    .generateReportWithOptions(options);
-
-            } catch (error) {
-                document.getElementById('status').innerText = 'Error: ' + error.message;
-            } finally {
-                spinner.style.display = 'none';
+            
+            document.getElementById('startDate').value = formatDate(firstDay);
+            document.getElementById('endDate').value = formatDate(lastDay);
+        }
+        
+        // Select report type
+        function selectReportType(type) {
+            // Remove selected class from all cards
+            document.querySelectorAll('.report-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked card
+            document.querySelector(`.report-card[data-type="${type}"]`).classList.add('selected');
+            
+            // Update selected report type
+            selectedReportType = type;
+            
+            // Update preview text
+            document.getElementById('reportPreview').textContent = reportPreviews[type];
+            
+            // Show/hide date range section for monthly reports
+            document.getElementById('dateRangeSection').style.display = 
+                (type === 'monthly') ? 'block' : 'none';
+            
+            // Show/hide specific options based on report type
+            updateOptions();
+        }
+        
+        // Update available options based on selected report type
+        function updateOptions() {
+            const recommendations = document.getElementById('includeRecommendations');
+            const toc = document.getElementById('includeTOC');
+            const ai = document.getElementById('includeAI');
+            
+            // Executive reports always include recommendations
+            if (selectedReportType === 'executive') {
+                recommendations.checked = true;
+                recommendations.disabled = true;
+                ai.checked = true;
+            } else {
+                recommendations.disabled = false;
             }
+            
+            // Monthly and Executive reports have TOC checked by default
+            if (selectedReportType === 'monthly' || selectedReportType === 'executive') {
+                toc.checked = true;
+            } else {
+                toc.checked = false;
+            }
+            
+            // Anomaly reports always include charts
+            if (selectedReportType === 'anomaly') {
+                document.getElementById('includeCharts').checked = true;
+            }
+        }
+        
+        // Toggle advanced options visibility
+        function toggleAdvancedOptions() {
+            const advancedOptions = document.getElementById('advancedOptions');
+            const toggle = document.querySelector('.advanced-options-toggle');
+            
+            if (advancedOptions.style.display === 'block') {
+                advancedOptions.style.display = 'none';
+                toggle.textContent = 'Show Advanced Options';
+            } else {
+                advancedOptions.style.display = 'block';
+                toggle.textContent = 'Hide Advanced Options';
+            }
+        }
+        
+        // Show scheduling dialog
+        function showScheduleDialog() {
+            google.script.run
+                .withSuccessHandler(function() {
+                    google.script.host.close();
+                })
+                .withFailureHandler(function(error) {
+                    showError('Failed to open scheduling dialog: ' + error.message);
+                })
+                .showScheduleReportsDialog();
+        }
+        
+        // Generate report
+        function generateReport() {
+            // Hide previous messages
+            hideMessages();
+            
+            // Get options
+            const options = {
+                reportType: selectedReportType,
+                includeCharts: document.getElementById('includeCharts').checked,
+                includeAI: document.getElementById('includeAI').checked,
+                includeTOC: document.getElementById('includeTOC').checked,
+                includeRecommendations: document.getElementById('includeRecommendations').checked,
+                locale: document.getElementById('locale').value,
+                currency: document.getElementById('currency').value,
+                confidenceThreshold: parseFloat(document.getElementById('confidenceThreshold').value),
+                exportPDF: document.getElementById('exportPDF').checked
+            };
+            
+            // Add date range for monthly reports
+            if (selectedReportType === 'monthly') {
+                options.dateRange = {
+                    startDate: document.getElementById('startDate').value,
+                    endDate: document.getElementById('endDate').value
+                };
+            }
+            
+            // Validate required fields
+            if (selectedReportType === 'monthly' && (!options.dateRange.startDate || !options.dateRange.endDate)) {
+                showError('Please select a start and end date for monthly reports.');
+                return;
+            }
+            
+            // Update button to loading state
+            const generateButton = document.getElementById('generateButton');
+            const originalText = generateButton.textContent;
+            generateButton.disabled = true;
+            generateButton.innerHTML = '<span class="spinner"></span> Generating...';
+            
+            // Call server side function to generate report
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    // Reset button
+                    generateButton.disabled = false;
+                    generateButton.innerHTML = originalText;
+                    
+                    // Show success message
+                    showSuccess(result);
+                })
+                .withFailureHandler(function(error) {
+                    // Reset button
+                    generateButton.disabled = false;
+                    generateButton.innerHTML = originalText;
+                    
+                    // Show error message
+                    showError(error.message);
+                })
+                .generateReportFromTemplate(selectedReportType, options);
+        }
+        
+        // Show success message
+        function showSuccess(message) {
+            const successElement = document.getElementById('success');
+            successElement.innerHTML = message;
+            successElement.style.display = 'block';
+        }
+        
+        // Show error message
+        function showError(message) {
+            const errorElement = document.getElementById('error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+        
+        // Hide all messages
+        function hideMessages() {
+            document.getElementById('success').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
         }
     </script>
 </body>

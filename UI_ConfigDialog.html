@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <style>
+    <?!= include('Style'); ?>
+    </style>
+    <title>Configuration Settings</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Configuration Settings</h2>
+        
+        <div class="card">
+            <h3>General Settings</h3>
+            
+            <div class="form-group">
+                <label for="locale">Default Locale:</label>
+                <input type="text" id="locale" value="<?= locale ?>" placeholder="en-US">
+                <div class="help-text">Format: language-COUNTRY (e.g., en-US, fr-FR)</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="currency">Default Currency:</label>
+                <select id="currency">
+                    <option value="USD" <?= currency === 'USD' ? 'selected' : '' ?>>USD - US Dollar</option>
+                    <option value="EUR" <?= currency === 'EUR' ? 'selected' : '' ?>>EUR - Euro</option>
+                    <option value="GBP" <?= currency === 'GBP' ? 'selected' : '' ?>>GBP - British Pound</option>
+                    <option value="JPY" <?= currency === 'JPY' ? 'selected' : '' ?>>JPY - Japanese Yen</option>
+                    <option value="CAD" <?= currency === 'CAD' ? 'selected' : '' ?>>CAD - Canadian Dollar</option>
+                    <option value="AUD" <?= currency === 'AUD' ? 'selected' : '' ?>>AUD - Australian Dollar</option>
+                    <option value="CNY" <?= currency === 'CNY' ? 'selected' : '' ?>>CNY - Chinese Yuan</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>AI & Analysis Settings</h3>
+            
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="enableAI" <?= enableAI ? 'checked' : '' ?>>
+                    Enable AI Features
+                </label>
+                <div class="help-text">Use Gemini AI for enhanced analysis and insights</div>
+            </div>
+            
+            <div class="form-group">
+                <label for="detectionAlgorithm">Anomaly Detection Algorithm:</label>
+                <select id="detectionAlgorithm">
+                    <option value="hybrid" <?= detectionAlgorithm === 'hybrid' ? 'selected' : '' ?>>Hybrid (Standard + AI)</option>
+                    <option value="standard" <?= detectionAlgorithm === 'standard' ? 'selected' : '' ?>>Standard Only</option>
+                    <option value="ai" <?= detectionAlgorithm === 'ai' ? 'selected' : '' ?>>AI Only</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="outlierThreshold">Outlier Detection Threshold:</label>
+                <input type="number" id="outlierThreshold" value="<?= outlierThreshold ?>" min="1" max="10" step="0.5">
+                <div class="help-text">Higher values detect fewer outliers (range: 1-10)</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h3>Scheduled Analysis</h3>
+            <div class="form-group">
+                <label for="scheduleFrequency">Frequency:</label>
+                <select id="scheduleFrequency">
+                    <option value="none">None</option>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+            
+            <div id="scheduleOptionsContainer" style="display:none;">
+                <div class="form-group">
+                    <label for="notificationEmail">Notification Email:</label>
+                    <input type="email" id="notificationEmail" placeholder="your.email@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="scheduleDay">Day:</label>
+                    <select id="scheduleDay" disabled>
+                        <option value="1">Monday</option>
+                        <option value="2">Tuesday</option>
+                        <option value="3">Wednesday</option>
+                        <option value="4">Thursday</option>
+                        <option value="5">Friday</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="scheduleHour">Hour (24h):</label>
+                    <select id="scheduleHour">
+                        <option value="1">1:00 AM</option>
+                        <option value="6" selected>6:00 AM</option>
+                        <option value="9">9:00 AM</option>
+                        <option value="12">12:00 PM</option>
+                        <option value="18">6:00 PM</option>
+                        <option value="22">10:00 PM</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button onclick="saveConfig()" class="primary">Save Settings</button>
+            <button onclick="google.script.host.close()">Cancel</button>
+            <button onclick="resetToDefaults()" class="secondary">Reset to Defaults</button>
+        </div>
+        
+        <div id="loading" class="loading" style="display:none;">
+            <div class="spinner"></div>
+            Processing...
+        </div>
+        
+        <div id="status" class="status" style="display:none;"></div>
+    </div>
+    
+    <script>
+        // Show/hide schedule options based on selection
+        document.getElementById('scheduleFrequency').addEventListener('change', function() {
+            document.getElementById('scheduleOptionsContainer').style.display = 
+                this.value === 'none' ? 'none' : 'block';
+                
+            // Enable or disable day selection based on frequency
+            const scheduleDay = document.getElementById('scheduleDay');
+            if (this.value === 'weekly') {
+                scheduleDay.disabled = false;
+            } else {
+                scheduleDay.disabled = true;
+            }
+        });
+        
+        // On page load, fetch current configuration
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentConfig();
+            loadScheduleConfig();
+        });
+        
+        function loadCurrentConfig() {
+            showLoading(true);
+            
+            google.script.run
+                .withSuccessHandler(function(config) {
+                    populateConfigForm(config);
+                    showLoading(false);
+                })
+                .withFailureHandler(function(error) {
+                    showStatus('Error loading configuration: ' + error.message, true);
+                    showLoading(false);
+                })
+                .getConfig();
+        }
+        
+        function loadScheduleConfig() {
+            google.script.run
+                .withSuccessHandler(function(scheduleConfig) {
+                    if (scheduleConfig) {
+                        document.getElementById('scheduleFrequency').value = scheduleConfig.frequency || 'none';
+                        document.getElementById('notificationEmail').value = scheduleConfig.notificationEmail || '';
+                        
+                        if (scheduleConfig.weekDay) {
+                            document.getElementById('scheduleDay').value = scheduleConfig.weekDay;
+                        }
+                        
+                        if (scheduleConfig.hour) {
+                            document.getElementById('scheduleHour').value = scheduleConfig.hour;
+                        }
+                        
+                        // Show schedule options if frequency is set
+                        if (scheduleConfig.frequency && scheduleConfig.frequency !== 'none') {
+                            document.getElementById('scheduleOptionsContainer').style.display = 'block';
+                            
+                            // Enable day selection for weekly schedule
+                            document.getElementById('scheduleDay').disabled = 
+                                scheduleConfig.frequency !== 'weekly';
+                        }
+                    }
+                })
+                .getScheduleConfig();
+        }
+        
+        function populateConfigForm(config) {
+            document.getElementById('locale').value = config.locale || 'en-US';
+            document.getElementById('currency').value = config.currency || 'USD';
+            document.getElementById('enableAI').checked = config.enableAIDetection !== false;
+            
+            if (config.outliers && config.outliers.threshold) {
+                document.getElementById('outlierThreshold').value = config.outliers.threshold;
+            }
+            
+            document.getElementById('detectionAlgorithm').value = config.detectionAlgorithm || 'hybrid';
+        }
+        
+        function saveConfig() {
+            showLoading(true);
+            clearStatus();
+            
+            // Get basic configuration
+            const config = {
+                locale: document.getElementById('locale').value.trim() || 'en-US',
+                currency: document.getElementById('currency').value,
+                enableAIDetection: document.getElementById('enableAI').checked,
+                outliers: {
+                    threshold: parseFloat(document.getElementById('outlierThreshold').value),
+                    check: true
+                },
+                detectionAlgorithm: document.getElementById('detectionAlgorithm').value
+            };
+            
+            // First save the main configuration
+            google.script.run
+                .withSuccessHandler(function() {
+                    // Then save schedule settings
+                    saveScheduleSettings();
+                })
+                .withFailureHandler(function(error) {
+                    showStatus('Error saving configuration: ' + error.message, true);
+                    showLoading(false);
+                })
+                .saveConfiguration(config);
+        }
+        
+        function saveScheduleSettings() {
+            const frequency = document.getElementById('scheduleFrequency').value;
+            
+            if (frequency === 'none') {
+                // If "none" is selected, delete any existing trigger
+                google.script.run
+                    .withSuccessHandler(function() {
+                        showStatus('Configuration saved successfully!', false);
+                        showLoading(false);
+                    })
+                    .withFailureHandler(function(error) {
+                        showStatus('Error saving schedule: ' + error.message, true);
+                        showLoading(false);
+                    })
+                    .deleteExistingTriggers('runScheduledAnomalyDetection');
+                return;
+            }
+            
+            // Collect schedule options
+            const scheduleOptions = {
+                notificationEmail: document.getElementById('notificationEmail').value,
+                hour: parseInt(document.getElementById('scheduleHour').value)
+            };
+            
+            // Add weekDay for weekly schedule
+            if (frequency === 'weekly') {
+                scheduleOptions.weekDay = parseInt(document.getElementById('scheduleDay').value);
+            }
+            
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    showStatus('Configuration and schedule saved successfully!', false);
+                    showLoading(false);
+                })
+                .withFailureHandler(function(error) {
+                    showStatus('Error saving schedule: ' + error.message, true);
+                    showLoading(false);
+                })
+                .setupScheduledAnomalyDetection(frequency, scheduleOptions);
+        }
+        
+        function resetToDefaults() {
+            showLoading(true);
+            clearStatus();
+            
+            google.script.run
+                .withSuccessHandler(function(defaultConfig) {
+                    populateConfigForm(defaultConfig);
+                    
+                    // Reset schedule options
+                    document.getElementById('scheduleFrequency').value = 'none';
+                    document.getElementById('notificationEmail').value = '';
+                    document.getElementById('scheduleDay').value = '1';
+                    document.getElementById('scheduleHour').value = '6';
+                    document.getElementById('scheduleOptionsContainer').style.display = 'none';
+                    
+                    showStatus('Reset to default values. Click Save to apply changes.', false);
+                    showLoading(false);
+                })
+                .withFailureHandler(function(error) {
+                    showStatus('Error resetting defaults: ' + error.message, true);
+                    showLoading(false);
+                })
+                .getDefaultConfig();
+        }
+        
+        function showStatus(message, isError) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = isError ? 'status error' : 'status success';
+            statusElement.style.display = 'block';
+        }
+        
+        function clearStatus() {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = '';
+            statusElement.style.display = 'none';
+        }
+        
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

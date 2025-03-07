@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <title>Schedule Automatic Reports</title>
+  <?!= include('Style'); ?>
+  <style>
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .frequency-options {
+      margin-top: 10px;
+      margin-left: 20px;
+      display: none;
+    }
+    
+    .result-message {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    .time-selector {
+      max-width: 100px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Schedule Automatic Reports</h2>
+    
+    <p class="form-description">
+      Configure automatic reports to be generated and emailed on a regular schedule.
+    </p>
+    
+    <div id="formContainer">
+      <div class="form-group">
+        <label for="frequency">Frequency:</label>
+        <select id="frequency" class="form-control">
+          <option value="none">None (Disable Scheduled Reports)</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+      
+      <div id="dailyOptions" class="frequency-options">
+        <div class="form-group">
+          <label for="dailyHour">Time of day:</label>
+          <select id="dailyHour" class="form-control time-selector">
+            <?!= generateHourOptions(); ?>
+          </select>
+        </div>
+      </div>
+      
+      <div id="weeklyOptions" class="frequency-options">
+        <div class="form-group">
+          <label for="weekDay">Day of week:</label>
+          <select id="weekDay" class="form-control">
+            <option value="1">Monday</option>
+            <option value="2">Tuesday</option>
+            <option value="3">Wednesday</option>
+            <option value="4">Thursday</option>
+            <option value="5">Friday</option>
+            <option value="6">Saturday</option>
+            <option value="0">Sunday</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="weeklyHour">Time of day:</label>
+          <select id="weeklyHour" class="form-control time-selector">
+            <?!= generateHourOptions(); ?>
+          </select>
+        </div>
+      </div>
+      
+      <div id="monthlyOptions" class="frequency-options">
+        <div class="form-group">
+          <label for="monthlyHour">Time of day:</label>
+          <select id="monthlyHour" class="form-control time-selector">
+            <?!= generateHourOptions(); ?>
+          </select>
+        </div>
+      </div>
+      
+      <div id="reportOptions">
+        <div class="form-group">
+          <label for="reportType">Report Type:</label>
+          <select id="reportType" class="form-control">
+            <option value="standard">Standard Report</option>
+            <option value="executive">Executive Summary</option>
+            <option value="monthly">Monthly Comparison</option>
+            <option value="anomaly">Anomaly Detail Report</option>
+            <option value="budget">Budget Analysis</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email Recipients:</label>
+          <input type="email" id="email" class="form-control" placeholder="email@example.com" value="<?!= email || userEmail || '' ?>">
+        </div>
+        
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="includeAI" checked>
+          <label for="includeAI">Include AI Analysis</label>
+        </div>
+      </div>
+      
+      <div class="button-group">
+        <button id="saveButton" class="primary-button">Save Schedule</button>
+        <button id="cancelButton" class="secondary-button">Cancel</button>
+      </div>
+      
+      <div id="result" class="result-message hidden"></div>
+    </div>
+  </div>
+  
+  <script>
+    // Initialize the form based on current selection
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set initial values from server data
+      const frequency = '<?!= frequency ?>';
+      document.getElementById('frequency').value = frequency || 'none';
+      document.getElementById('reportType').value = '<?!= reportType ?>' || 'standard';
+      document.getElementById('email').value = '<?!= email ?>' || '<?!= userEmail ?>' || '';
+      document.getElementById('includeAI').checked = <?!= includeAI !== false ? 'true' : 'false' ?>;
+      
+      // Show the appropriate options section
+      showFrequencyOptions(frequency);
+      
+      // Add event listeners
+      document.getElementById('frequency').addEventListener('change', function() {
+        showFrequencyOptions(this.value);
+      });
+      
+      document.getElementById('saveButton').addEventListener('click', saveSchedule);
+      document.getElementById('cancelButton').addEventListener('click', closeDialog);
+    });
+    
+    // Show/hide options based on frequency selection
+    function showFrequencyOptions(frequency) {
+      // Hide all frequency options first
+      document.querySelectorAll('.frequency-options').forEach(function(el) {
+        el.style.display = 'none';
+      });
+      
+      // Hide report options if frequency is "none"
+      const reportOptions = document.getElementById('reportOptions');
+      reportOptions.style.display = frequency === 'none' ? 'none' : 'block';
+      
+      // Show the selected frequency options
+      if (frequency !== 'none') {
+        const optionsDiv = document.getElementById(frequency + 'Options');
+        if (optionsDiv) {
+          optionsDiv.style.display = 'block';
+        }
+      }
+    }
+    
+    // Save the schedule
+    function saveSchedule() {
+      const frequency = document.getElementById('frequency').value;
+      const reportType = document.getElementById('reportType').value;
+      const email = document.getElementById('email').value;
+      const includeAI = document.getElementById('includeAI').checked;
+      
+      let schedulingOptions = {
+        frequency: frequency,
+        reportType: reportType,
+        email: email,
+        includeAI: includeAI
+      };
+      
+      // Add frequency-specific options
+      if (frequency === 'daily') {
+        schedulingOptions.hour = parseInt(document.getElementById('dailyHour').value);
+      } else if (frequency === 'weekly') {
+        schedulingOptions.weekDay = parseInt(document.getElementById('weekDay').value);
+        schedulingOptions.hour = parseInt(document.getElementById('weeklyHour').value);
+      } else if (frequency === 'monthly') {
+        schedulingOptions.hour = parseInt(document.getElementById('monthlyHour').value);
+      }
+      
+      // Validate email if scheduling is enabled
+      if (frequency !== 'none' && !validateEmail(email)) {
+        showResult('Please enter a valid email address.', 'error');
+        return;
+      }
+      
+      // Disable buttons during save
+      toggleButtons(true);
+      
+      // Call server-side function
+      google.script.run
+        .withSuccessHandler(function(response) {
+          showResult(response, 'success');
+          toggleButtons(false);
+        })
+        .withFailureHandler(function(error) {
+          showResult('Error: ' + error.message, 'error');
+          toggleButtons(false);
+        })
+        .scheduleAutomaticReports(frequency, schedulingOptions);
+    }
+    
+    // Display result message
+    function showResult(message, type) {
+      const resultDiv = document.getElementById('result');
+      resultDiv.textContent = message;
+      resultDiv.className = 'result-message ' + type;
+      resultDiv.classList.remove('hidden');
+      
+      // Auto-hide success message after 3 seconds
+      if (type === 'success') {
+        setTimeout(function() {
+          resultDiv.classList.add('hidden');
+        }, 3000);
+      }
+    }
+    
+    // Enable/disable buttons during processing
+    function toggleButtons(disabled) {
+      document.getElementById('saveButton').disabled = disabled;
+      document.getElementById('cancelButton').disabled = disabled;
+    }
+    
+    // Simple email validation
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+    
+    // Close the dialog
+    function closeDialog() {
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>
