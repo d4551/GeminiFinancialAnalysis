@@ -1,5 +1,7 @@
 # Gemini Financial Analysis
 
+> **NOTICE:** This project is undergoing active refactoring to centralize functions and improve design patterns. Some functionality may be in the process of being consolidated across files. Please refer to the code comments for the most up-to-date implementation details.
+
 An open source Google Apps Script application that leverages Google's Gemini AI for advanced financial analysis and anomaly detection in Google Sheets.
 
 ![GitHub License](https://img.shields.io/github/license/d4551/GeminiFinancialAnalysis)
@@ -23,13 +25,13 @@ Gemini Financial Analysis is an open source tool built to empower financial prof
 
 ## Screenshots
 
-<!-- Add screenshots here when available -->
+Coming soon!
 
 ## Installation
 
 ### Option 1: Use the Sample Sheet (Recommended)
 
-1. Open the [Sample Sheet](https://docs.google.com/spreadsheets/d/1r2QB5vk8tI2tC2yiaYJSKqd_AmQGdCl-e7fEQRm8ods/copy) (link to be added)
+1. Open the [Sample Sheet](https://docs.google.com/spreadsheets/d/1r2QB5vk8tI2tC2yiaYJSKqd_AmQGdCl-e7fEQRm8ods/edit?usp=sharing)
 2. Make a copy to your Google Drive
 3. The script is already embedded and ready to use
 
@@ -62,7 +64,7 @@ Set these properties in the Apps Script project settings (Project Settings > Scr
 
 ## Demos and Tutorials
 
-<!-- Add links to tutorial videos/docs when available -->
+Coming Soon!
 
 ## Usage Guide
 
@@ -134,16 +136,26 @@ Configure the application through the Settings menu:
 
 ```
 GeminiFinancialAnalysis/
+├── AnomalyDetection.gs
 ├── Code.gs              # Main application code and menu handling
 ├── Configuration.gs     # Configuration management and preferences
+├── Gemini.gs
+├── HTMLUtils.gs
+├── LICENSE
+├── Quickbooks.gs
+├── README.md            # Documentation
 ├── ReportGeneration.gs  # Report creation and formatting logic
-├── utils.gs             # Utility functions and helpers
-├── UI_Main.html         # Main UI template for chat interface
-├── UI_ReportMenu.html   # Report generation menu interface
-├── UI_QuickBooksConfig.html # QuickBooks integration UI
-├── UI_GeminiModelSelection.html # Gemini model selection UI
+├── ReportUtils.gs
 ├── Style.html           # CSS styles for UI components
-└── README.md            # Documentation
+├── UI_ConfigDialog.html
+├── UI_EmailReportDialog.html
+├── UI_GeminiModelSelection.html # Gemini model selection UI
+├── UI_Main.html         # Main UI template for chat interface
+├── UI_PatternAnalysisDialog.html
+├── UI_QuickbooksConfig.html # QuickBooks integration UI
+├── UI_QuickBooksImportDialog.html
+├── UI_ReportMenu.html   # Report generation menu interface
+└── utils.gs             # Utility functions and helpers
 ```
 
 ## Contributing
