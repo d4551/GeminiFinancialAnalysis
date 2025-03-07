@@ -25,13 +25,11 @@ Gemini Financial Analysis is an open source tool built to empower financial prof
 
 ## Screenshots
 
-Coming soon!
 <img width="1727" alt="Screenshot 2025-03-07 at 15 17 29" src="https://github.com/user-attachments/assets/5993f94a-b8c2-4af9-9194-f4b40128587a" />
 <img width="1722" alt="Screenshot 2025-03-08 at 02 58 39" src="https://github.com/user-attachments/assets/93f9838b-0d27-49e8-8a55-c5e9d734c322" />
 <img width="1715" alt="Screenshot 2025-03-08 at 02 59 26" src="https://github.com/user-attachments/assets/01c6422d-2493-45b6-8a72-92c5217f8b4d" />
 <img width="1716" alt="Screenshot 2025-03-08 at 03 00 02" src="https://github.com/user-attachments/assets/96acb2ab-26ba-4902-81ce-4b2eedfe0022" />
 <img width="1711" alt="Screenshot 2025-03-08 at 03 00 49" src="https://github.com/user-attachments/assets/92ed7d09-de0d-4020-a8b1-c290d855d4ca" />
-
 
 
 ## Installation
@@ -56,11 +54,17 @@ Set these properties in the Apps Script project settings (Project Settings > Scr
 
 | Property | Description | Example |
 |----------|-------------|---------|
-| GEMINI_API_KEY | Your Google Gemini API key | `abc123...` |
+| DEFAULT_CURRENCY | Default currency for formatting | `USD` |
 | DEFAULT_LOCALE | Default locale for formatting | `en-US` |
-| QB_CLIENT_ID | QuickBooks API Client ID (optional) | `quickbooks123...` |
-| QB_CLIENT_SECRET | QuickBooks API Client Secret (optional) | `secret456...` |
-| QUICKBOOKS_ENV | QuickBooks environment (optional) | `SANDBOX` or `PRODUCTION` |
+| ENABLE_AI | Enable AI features | `true` |
+| GEMINI_API_KEY | Your Google Gemini API key | `abc123...` |
+| IS_INITIALIZED | Indicates if the script is initialized | `true` |
+| QB_CLIENT_ID | QuickBooks API Client ID (optional) | `0` |
+| QB_CLIENT_SECRET | QuickBooks API Client Secret (optional) | `#VALUE#` |
+| QUICKBOOKS_ENV | QuickBooks environment (optional) | `SANDBOX` |
+| USER_CONFIG | User configuration settings | `{"reportConfig":{"includeTableOfContents":"fa` |
+| WORKSPACE_TOOLS | Workspace tools configuration | `#VALUE#` |
+| YOUR_PROJECT_LOCATION | Your project location | `#VALUE#` |
 
 ## Getting Started
 
