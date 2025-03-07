@@ -25,6 +25,7 @@ Gemini Financial Analysis is an open source tool built to empower financial prof
 
 ## Screenshots
 
+<img width="1725" alt="Screenshot 2025-03-08 at 03 06 50" src="https://github.com/user-attachments/assets/d7267f7d-59be-4f11-8f55-e06761c314ee" />
 <img width="1722" alt="Screenshot 2025-03-08 at 02 58 39" src="https://github.com/user-attachments/assets/93f9838b-0d27-49e8-8a55-c5e9d734c322" />
 <img width="1715" alt="Screenshot 2025-03-08 at 02 59 26" src="https://github.com/user-attachments/assets/01c6422d-2493-45b6-8a72-92c5217f8b4d" />
 <img width="1716" alt="Screenshot 2025-03-08 at 03 00 02" src="https://github.com/user-attachments/assets/96acb2ab-26ba-4902-81ce-4b2eedfe0022" />
