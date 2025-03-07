@@ -186,22 +186,22 @@ Please make sure to update tests and documentation as appropriate.
 
 ### Adding New Features
 
-1. Create new functions in appropriate .gs files
-2. Update the menu in `Code.gs` if needed
-3. Add UI components in HTML files if required
-4. Update configuration options in `Configuration.gs`
-5. Add utility functions in `utils.gs`
-6. Document your code and add to the README if necessary
+1.  Implement new functionalities by creating well-documented functions within the relevant `.gs` files. Ensure each function has a clear purpose and adheres to existing coding standards.
+2.  Modify the `Code.gs` file to integrate new features into the application's menu structure. This ensures users can easily access and utilize the added functionalities through the Google Sheets interface.
+3.  Develop or update UI components using HTML files to provide user-friendly interfaces for new features. Ensure that the UI elements are responsive and consistent with the application's overall design.
+4.  Incorporate new configuration settings within the `Configuration.gs` file to allow users to customize and control the behavior of new features.
+5.  Add or modify utility functions in `utils.gs` to support the implementation of new features, ensuring that these functions are reusable and efficient.
+6.  Provide comprehensive documentation for all new features, including usage instructions, configuration options, and troubleshooting tips. Update the `README.md` file to reflect these changes.
 
 ### Best Practices
 
-- Use TypeScript-style JSDoc comments for better code documentation
-- Follow Google Apps Script best practices
-- Implement proper error handling with helpful user feedback
-- Log significant operations for debugging
-- Use consistent code formatting and naming conventions
-- Test on various datasets before submitting changes
-
+-   Employ TypeScript-style JSDoc comments to ensure comprehensive and maintainable code documentation.
+-   Adhere to Google Apps Script best practices to optimize performance and reliability.
+-   Implement robust error handling mechanisms to provide informative feedback to users and prevent unexpected issues.
+-   Log significant operations and events to facilitate debugging and monitoring of the application's behavior.
+-   Maintain consistent code formatting and naming conventions to enhance code readability and collaboration.
+-   Thoroughly test new features and modifications on various datasets to ensure compatibility and accuracy.
+  
 ## Dependencies
 
 - Google Apps Script
